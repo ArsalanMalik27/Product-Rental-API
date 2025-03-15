@@ -2,7 +2,7 @@
 
 ## Overview
 
-Project Name is a Python-based application that utilizes Poetry for dependency management and Alembic for database migrations. This project follows best practices for package management, virtual environments, and database version control to ensure a smooth development and deployment process.
+APIs for a Product Rental Service. You are able to add and get Products, Attribute, Attribute Values, Region, Rental Periods and Pricing according to Rental Period and Region.  
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ Installation
 
 ### 1. Clone the Repository
 
-`git clone https://github.com/yourusername/yourproject.git`
-`cd yourproject`
+`git clone https://github.com/ArsalanMalik27/Product-Rental-API.git`
+`cd Product-Rental-API`
 
 ### 2. Install Dependencies
 
