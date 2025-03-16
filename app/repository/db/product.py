@@ -11,6 +11,7 @@ from app.repository.db.schema.product_pricing import ProductPricing
 from app.repository.db.schema.region import Region
 from app.repository.db.schema.rental_period import RentalPeriod
 from sqlalchemy.orm import joinedload, contains_eager
+from app.shared.domain.data.page import Page, PageMetadata
 from sqlalchemy import func, select
 
 from sqlalchemy.orm import aliased
@@ -36,12 +37,12 @@ class ProductDBRepository(
     
     async def create_product(self,props : ProductProps):
         async with self._db_session() as session:
-            enitity_dict = props.dict(exclude=['attribute_values'])
+            enitity_dict = props.dict(exclude=['attribute_values', 'product_pricing'])
             que = self._table(**enitity_dict)
             session.add(que)
             await session.commit()
     
-    async def get_all_products(self):
+    async def get_all_products(self, region_id, rental_period_id, page, page_size):
         async with self._db_session() as session:
             query = (
                 self.select()
@@ -56,7 +57,10 @@ class ProductDBRepository(
                 .group_by(Product, AttributeValues, ProductPricing)
                 .execution_options(synchronize_session="fetch")
             )
-            results = await session.execute(query)
-            return list(
-                map(lambda obj: self._entity.from_orm(obj), results.scalars().unique().all())
-            )
+            if region_id:
+                query = query.filter(ProductPricing.region_id == region_id)
+            if rental_period_id:
+                query = query.filter(ProductPricing.rental_period_id == rental_period_id)
+            results, page_metadata = await self.paginate(query, page, page_size)
+            items = list(map(lambda obj: self._entity.from_orm(obj), results))
+            return Page(items=items, **page_metadata.dict())

@@ -45,10 +45,19 @@ class BaseDBRepository(Generic[ENTITY_TYPE, TABLE_TYPE], BaseRepository[ENTITY_T
             paginated_query = query.limit(page_size).offset((page - 1) * page_size)
             count_query = query.with_only_columns(func.count(self._table.id))
             results = await session.execute(paginated_query)
-            total_result = await session.execute(count_query)
-            page_data = PageMetadata(
-                page=page,
-                page_size=page_size,
-                total=total_result.scalar_one(),
-            )
-            return (results.scalars().unique().all(), page_data)
+            responses = results.scalars().unique().all()
+            if len(responses) >= 1:
+                total_result = await session.execute(count_query)
+                page_data = PageMetadata(
+                    page=page,
+                    page_size=page_size,
+                    total=len(responses),
+                )
+                return (responses, page_data)
+            else:
+                page_data = PageMetadata(
+                    page=0,
+                    page_size=0,
+                    total=0,
+                )
+                return ([], page_data)
