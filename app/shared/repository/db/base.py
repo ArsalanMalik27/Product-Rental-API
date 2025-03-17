@@ -34,6 +34,12 @@ class BaseDBRepository(Generic[ENTITY_TYPE, TABLE_TYPE], BaseRepository[ENTITY_T
             session.add(query)
             await session.commit()
     
+    async def get_by_id(self, id: UUID) -> Optional[ENTITY_TYPE]:
+        async with self._db_session() as session:
+            query = self.select().where(self._table.id == id)
+            result = await session.execute(query)
+            return result.scalars().first()
+
     async def paginate(
         self, query: Any, page: int, page_size: int
     ) -> tuple[list[TABLE_TYPE], PageMetadata]:
